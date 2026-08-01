@@ -8,18 +8,17 @@ import {
   Wrench,
   Mail,
   Phone,
-  Globe,
   Download,
   Upload,
   RotateCcw,
   Plus,
   Trash2,
   Printer,
-  FileCode2
+  Eye
 } from 'lucide-react';
 
 const defaultCvData = {
-  fullName: 'Yoour Name Here',
+  fullName: 'Manirul Islam',
   title: 'Digital Operations & E-Commerce Specialist',
   email: 'manirul.islam@example.com',
   phone: '+880 1234 567890',
@@ -69,8 +68,9 @@ function App() {
   });
 
   const [template, setTemplate] = useState('corporate');
-  const [mobileTab, setMobileTab] = useState('editor'); 
+  const [mobileTab, setMobileTab] = useState('edit'); 
   const fileInputRef = useRef(null);
+  const componentRef = useRef();
 
   useEffect(() => {
     localStorage.setItem('cv_enterprise_peak_data', JSON.stringify(cvData));
@@ -125,8 +125,64 @@ function App() {
     setCvData((prev) => ({ ...prev, educations: newEducations }));
   };
 
+  // Updated Print function with zero browser margin and uniform padding
   const handlePrint = () => {
-    window.print();
+    const printContent = componentRef.current.innerHTML;
+
+    const printWindow = window.open('', '_blank', 'width=800,height=1100');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${cvData.fullName} - CV</title>
+          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+          <style>
+            @page {
+              size: A4;
+              margin: 0;
+            }
+            @media print {
+              html, body {
+                background-color: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 210mm;
+                height: 297mm;
+              }
+              .print-page {
+                width: 210mm !important;
+                min-height: 297mm !important;
+                margin: 0 !important;
+                padding: 35px !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+                box-sizing: border-box !important;
+              }
+            }
+            body {
+              background: #ffffff;
+              color: #000000;
+              font-family: sans-serif;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-page">
+            ${printContent}
+          </div>
+          <script>
+            setTimeout(() => {
+              window.focus();
+              window.print();
+              window.close();
+            }, 500);
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const handleExportJSON = () => {
@@ -162,42 +218,221 @@ function App() {
     }
   };
 
-  return (
-    <div className="flex flex-col lg:flex-row h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100">
-      
-      {/* MOBILE TOP NAVIGATION BAR */}
-      <div className="flex lg:hidden bg-slate-900 border-b border-slate-800 p-2.5 no-print shrink-0 gap-2 items-center">
-        <div className="flex flex-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-          <button
-            onClick={() => setMobileTab('editor')}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 ${
-              mobileTab === 'editor' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'
-            }`}
-          >
-            <FileCode2 size={14} /> Edit Fields
-          </button>
-          <button
-            onClick={() => setMobileTab('preview')}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 ${
-              mobileTab === 'preview' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400'
-            }`}
-          >
-            <Globe size={14} /> CV Preview
-          </button>
+  const renderTemplateContent = () => {
+    if (template === 'corporate') {
+      return (
+        <div className="w-[794px] min-h-[1123px] bg-white text-slate-900 p-[40px] font-sans box-border">
+          <div className="border-b-2 border-slate-900 pb-4 mb-4 text-center">
+            <h1 className="text-3xl font-black uppercase tracking-widest">{cvData.fullName}</h1>
+            <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mt-1">{cvData.title}</p>
+            <div className="flex flex-wrap justify-center gap-4 text-[11px] text-slate-600 mt-2 font-medium">
+              {cvData.email && <span className="flex items-center gap-1"><Mail size={12} className="text-slate-400" /> {cvData.email}</span>}
+              {cvData.phone && <span className="flex items-center gap-1"><Phone size={12} className="text-slate-400" /> {cvData.phone}</span>}
+              {cvData.location && <span className="flex items-center gap-1"><MapPin size={12} className="text-slate-400" /> {cvData.location}</span>}
+            </div>
+          </div>
+
+          {cvData.summary && (
+            <div className="mb-4">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-1 mb-1.5">Executive Summary</h3>
+              <p className="text-xs leading-relaxed text-slate-800">{cvData.summary}</p>
+            </div>
+          )}
+
+          {cvData.experiences.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-1 mb-2">Professional Experience</h3>
+              <div className="space-y-3">
+                {cvData.experiences.map((exp, i) => (
+                  <div key={i}>
+                    <div className="flex justify-between items-baseline font-bold text-xs">
+                      <span>{exp.role} — <span className="font-normal text-slate-700">{exp.company}</span></span>
+                      <span className="text-slate-600 text-[11px]">{exp.duration}</span>
+                    </div>
+                    <p className="text-xs text-slate-800 mt-1 whitespace-pre-line leading-relaxed">{exp.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {cvData.educations.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-1 mb-1.5">Education</h3>
+              <div className="space-y-2">
+                {cvData.educations.map((edu, i) => (
+                  <div key={i} className="flex justify-between items-baseline text-xs">
+                    <span className="font-bold">{edu.degree} <span className="font-normal text-slate-700">({edu.institution})</span></span>
+                    <span className="text-slate-600 text-[11px]">{edu.duration}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {cvData.skills && (
+            <div>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-1 mb-1.5">Core Competencies</h3>
+              <p className="text-xs text-slate-800 leading-relaxed">{cvData.skills}</p>
+            </div>
+          )}
         </div>
-        <button
-          onClick={handlePrint}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-lg shadow transition flex items-center justify-center cursor-pointer shrink-0"
-          title="Print / Save PDF"
+      );
+    }
+
+    if (template === 'modernTech') {
+      return (
+        <div className="w-[794px] min-h-[1123px] bg-white text-slate-800 p-[40px] font-sans border-l-8 border-indigo-600 box-border">
+          <div className="pb-4 mb-4 border-b border-slate-100">
+            <h1 className="text-3xl font-black text-slate-950 tracking-tight">{cvData.fullName}</h1>
+            <p className="text-sm font-bold text-indigo-600 mt-0.5">{cvData.title}</p>
+            <div className="flex flex-wrap gap-4 text-xs text-slate-500 mt-2 font-medium">
+              {cvData.email && <span className="flex items-center gap-1"><Mail size={13} className="text-indigo-500" /> {cvData.email}</span>}
+              {cvData.phone && <span className="flex items-center gap-1"><Phone size={13} className="text-indigo-500" /> {cvData.phone}</span>}
+              {cvData.location && <span className="flex items-center gap-1"><MapPin size={13} className="text-indigo-500" /> {cvData.location}</span>}
+            </div>
+          </div>
+
+          {cvData.summary && (
+            <div className="mb-4">
+              <h4 className="text-[11px] font-black uppercase tracking-wider text-indigo-600 mb-1">Overview</h4>
+              <p className="text-xs text-slate-700 leading-relaxed">{cvData.summary}</p>
+            </div>
+          )}
+
+          {cvData.experiences.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-[11px] font-black uppercase tracking-wider text-indigo-600 mb-2">Professional Experience</h4>
+              <div className="space-y-3">
+                {cvData.experiences.map((exp, i) => (
+                  <div key={i}>
+                    <div className="flex justify-between items-baseline">
+                      <h5 className="font-bold text-slate-900 text-xs">{exp.role} <span className="text-indigo-600">@ {exp.company}</span></h5>
+                      <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{exp.duration}</span>
+                    </div>
+                    <p className="text-xs text-slate-700 mt-1 whitespace-pre-line leading-relaxed">{exp.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {cvData.educations.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-[11px] font-black uppercase tracking-wider text-indigo-600 mb-2">Education</h4>
+              <div className="space-y-2">
+                {cvData.educations.map((edu, i) => (
+                  <div key={i} className="flex justify-between items-baseline text-xs">
+                    <span className="font-bold text-slate-900">{edu.degree} — <span className="text-slate-600">{edu.institution}</span></span>
+                    <span className="text-[11px] text-slate-500">{edu.duration}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {cvData.skills && (
+            <div>
+              <h4 className="text-[11px] font-black uppercase tracking-wider text-indigo-600 mb-2">Technical Stack</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {cvData.skills.split(',').map((skill, index) => (
+                  <span key={index} className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-[11px] font-bold rounded">
+                    {skill.trim()}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-[794px] min-h-[1123px] bg-white text-slate-900 p-[40px] font-serif box-border">
+        <div className="text-center pb-4 mb-4 border-b border-slate-400">
+          <h1 className="text-2xl font-bold uppercase tracking-widest">{cvData.fullName}</h1>
+          <p className="text-sm italic text-slate-700 mt-1">{cvData.title}</p>
+          <div className="text-xs text-slate-600 mt-2 space-x-3 font-sans">
+            {cvData.email && <span>{cvData.email}</span>}
+            {cvData.phone && <span>| {cvData.phone}</span>}
+            {cvData.location && <span>| {cvData.location}</span>}
+          </div>
+        </div>
+
+        {cvData.summary && (
+          <div className="mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-1 font-sans">Profile Overview</h4>
+            <p className="text-xs text-slate-800 leading-relaxed">{cvData.summary}</p>
+          </div>
+        )}
+
+        {cvData.experiences.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-2 font-sans">Career History</h4>
+            <div className="space-y-3">
+              {cvData.experiences.map((exp, i) => (
+                <div key={i}>
+                  <div className="flex justify-between text-xs font-bold">
+                    <span>{exp.role}, {exp.company}</span>
+                    <span>{exp.duration}</span>
+                  </div>
+                  <p className="text-xs text-slate-800 mt-1 whitespace-pre-line leading-relaxed">{exp.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {cvData.educations.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-2 font-sans">Academic Background</h4>
+            <div className="space-y-2">
+              {cvData.educations.map((edu, i) => (
+                <div key={i} className="flex justify-between text-xs">
+                  <span><strong>{edu.degree}</strong>, {edu.institution}</span>
+                  <span>{edu.duration}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {cvData.skills && (
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-1 font-sans">Core Expertise</h4>
+            <p className="text-xs text-slate-800">{cvData.skills}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col xl:flex-row h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100">
+      
+      {/* MOBILE TAB TOGGLE */}
+      <div className="flex xl:hidden bg-slate-900 border-b border-slate-800 p-2 justify-center gap-2 shrink-0">
+        <button 
+          onClick={() => setMobileTab('edit')} 
+          className={`flex-1 py-2 text-xs font-bold rounded flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === 'edit' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
+          }`}
         >
-          <Printer size={18} />
+          <Wrench size={14} /> Edit Form
+        </button>
+        <button 
+          onClick={() => setMobileTab('preview')} 
+          className={`flex-1 py-2 text-xs font-bold rounded flex items-center justify-center gap-1.5 cursor-pointer ${
+            mobileTab === 'preview' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'
+          }`}
+        >
+          <Eye size={14} /> Live A4 Preview
         </button>
       </div>
 
       {/* SIDEBAR EDITOR PANEL */}
-      <div className={`w-full lg:w-[42%] h-full bg-slate-900 border-r border-slate-800 flex flex-col shadow-2xl z-10 no-print ${mobileTab === 'preview' ? 'hidden lg:flex' : 'flex'}`}>
+      <div className={`w-full xl:w-[420px] h-full bg-slate-900 border-r border-slate-800 flex flex-col shadow-2xl z-20 shrink-0 ${mobileTab === 'preview' ? 'hidden xl:flex' : 'flex'}`}>
         
-        {/* Top Control Bar */}
         <div className="p-4 border-b border-slate-800 bg-slate-950/80">
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-xs font-black tracking-widest text-indigo-400 uppercase flex items-center gap-1.5">
@@ -220,10 +455,8 @@ function App() {
           </div>
         </div>
 
-        {/* Scrollable Workspace Form */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           
-          {/* Layout Selector */}
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Corporate Layout Format</label>
             <div className="grid grid-cols-3 gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800">
@@ -245,7 +478,6 @@ function App() {
             </div>
           </div>
 
-          {/* Personal Info */}
           <div className="space-y-2.5 bg-slate-950/40 p-3 rounded-lg border border-slate-800">
             <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
               <FileText size={14} /> Identification
@@ -283,7 +515,6 @@ function App() {
             </div>
           </div>
 
-          {/* Work Experience */}
           <div className="space-y-2.5 bg-slate-950/40 p-3 rounded-lg border border-slate-800">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -311,7 +542,6 @@ function App() {
             ))}
           </div>
 
-          {/* Education */}
           <div className="space-y-2.5 bg-slate-950/40 p-3 rounded-lg border border-slate-800">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -338,7 +568,6 @@ function App() {
             ))}
           </div>
 
-          {/* Skills */}
           <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-800">
             <label className="block text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
               <Settings size={14} /> Core Competencies & Stack
@@ -348,7 +577,6 @@ function App() {
 
         </div>
 
-        {/* Action Trigger */}
         <div className="p-3 border-t border-slate-800 bg-slate-950/80">
           <button 
             onClick={handlePrint} 
@@ -360,194 +588,24 @@ function App() {
 
       </div>
 
-      {/* RENDER PREVIEW AREA (Fixed width sheet with horizontal/vertical scroll wrapper for mobile) */}
-      <div className={`flex-1 h-full overflow-auto cv-preview-scroll p-4 sm:p-8 lg:p-12 flex flex-col items-center print-only-full bg-slate-950 ${mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'}`}>
+      {/* RENDER PREVIEW AREA */}
+      <div className={`flex-1 h-full overflow-y-auto p-4 sm:p-6 flex flex-col items-center bg-slate-950 ${mobileTab === 'edit' ? 'hidden xl:flex' : 'flex'}`}>
         
-        {/* ================= TEMPLATE 1: CORPORATE EXECUTIVE ================= */}
-        {template === 'corporate' && (
-          <div className="w-[800px] min-h-[1056px] shrink-0 bg-white text-slate-900 p-12 shadow-2xl rounded font-sans">
-            <div className="border-b-2 border-slate-900 pb-5 mb-5 text-center">
-              <h1 className="text-3xl font-black uppercase tracking-widest">{cvData.fullName}</h1>
-              <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mt-1">{cvData.title}</p>
-              <div className="flex flex-wrap justify-center gap-4 text-[11px] text-slate-600 mt-2 font-medium">
-                {cvData.email && <span className="flex items-center gap-1"><Mail size={12} className="text-slate-400" /> {cvData.email}</span>}
-                {cvData.phone && <span className="flex items-center gap-1"><Phone size={12} className="text-slate-400" /> {cvData.phone}</span>}
-                {cvData.location && <span className="flex items-center gap-1"><MapPin size={12} className="text-slate-400" /> {cvData.location}</span>}
-              </div>
-            </div>
+        <div className="w-full max-w-[794px] mb-3 flex justify-between items-center bg-slate-900/80 backdrop-blur px-4 py-2 rounded-lg border border-slate-800 shrink-0">
+          <span className="text-xs font-semibold text-slate-400">Live A4 Document Preview</span>
+          <button 
+            onClick={handlePrint} 
+            className="px-3.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs flex items-center gap-1.5 shadow transition cursor-pointer"
+          >
+            <Printer size={14} /> Save as PDF
+          </button>
+        </div>
 
-            {cvData.summary && (
-              <div className="mb-5">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-1 mb-2">Executive Summary</h3>
-                <p className="text-xs leading-relaxed text-slate-800">{cvData.summary}</p>
-              </div>
-            )}
-
-            {cvData.experiences.length > 0 && (
-              <div className="mb-5">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-1 mb-3">Professional Experience</h3>
-                <div className="space-y-4">
-                  {cvData.experiences.map((exp, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between items-baseline font-bold text-xs">
-                        <span>{exp.role} — <span className="font-normal text-slate-700">{exp.company}</span></span>
-                        <span className="text-slate-600 text-[11px]">{exp.duration}</span>
-                      </div>
-                      <p className="text-xs text-slate-800 mt-1 whitespace-pre-line leading-relaxed">{exp.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {cvData.educations.length > 0 && (
-              <div className="mb-5">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-1 mb-2">Education</h3>
-                <div className="space-y-2">
-                  {cvData.educations.map((edu, i) => (
-                    <div key={i} className="flex justify-between items-baseline text-xs">
-                      <span className="font-bold">{edu.degree} <span className="font-normal text-slate-700">({edu.institution})</span></span>
-                      <span className="text-slate-600 text-[11px]">{edu.duration}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {cvData.skills && (
-              <div>
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-1 mb-2">Core Competencies</h3>
-                <p className="text-xs text-slate-800 leading-relaxed">{cvData.skills}</p>
-              </div>
-            )}
+        <div className="w-full flex justify-center pb-8 overflow-x-auto">
+          <div className="shadow-2xl rounded bg-white shrink-0" ref={componentRef}>
+            {renderTemplateContent()}
           </div>
-        )}
-
-        {/* ================= TEMPLATE 2: MODERN TECH ================= */}
-        {template === 'modernTech' && (
-          <div className="w-[800px] min-h-[1056px] shrink-0 bg-white text-slate-800 p-12 shadow-2xl rounded font-sans border-l-8 border-indigo-600">
-            <div className="pb-5 mb-5 border-b border-slate-100">
-              <h1 className="text-3xl font-black text-slate-950 tracking-tight">{cvData.fullName}</h1>
-              <p className="text-sm font-bold text-indigo-600 mt-0.5">{cvData.title}</p>
-              <div className="flex flex-wrap gap-4 text-xs text-slate-500 mt-2 font-medium">
-                {cvData.email && <span className="flex items-center gap-1"><Mail size={13} className="text-indigo-500" /> {cvData.email}</span>}
-                {cvData.phone && <span className="flex items-center gap-1"><Phone size={13} className="text-indigo-500" /> {cvData.phone}</span>}
-                {cvData.location && <span className="flex items-center gap-1"><MapPin size={13} className="text-indigo-500" /> {cvData.location}</span>}
-              </div>
-            </div>
-
-            {cvData.summary && (
-              <div className="mb-5">
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-indigo-600 mb-1.5">Overview</h4>
-                <p className="text-xs text-slate-700 leading-relaxed">{cvData.summary}</p>
-              </div>
-            )}
-
-            {cvData.experiences.length > 0 && (
-              <div className="mb-5">
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-indigo-600 mb-3">Professional Experience</h4>
-                <div className="space-y-4">
-                  {cvData.experiences.map((exp, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between items-baseline">
-                        <h5 className="font-bold text-slate-900 text-xs">{exp.role} <span className="text-indigo-600">@ {exp.company}</span></h5>
-                        <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{exp.duration}</span>
-                      </div>
-                      <p className="text-xs text-slate-700 mt-1.5 whitespace-pre-line leading-relaxed">{exp.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {cvData.educations.length > 0 && (
-              <div className="mb-5">
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-indigo-600 mb-2.5">Education</h4>
-                <div className="space-y-2">
-                  {cvData.educations.map((edu, i) => (
-                    <div key={i} className="flex justify-between items-baseline text-xs">
-                      <span className="font-bold text-slate-900">{edu.degree} — <span className="text-slate-600">{edu.institution}</span></span>
-                      <span className="text-[11px] text-slate-500">{edu.duration}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {cvData.skills && (
-              <div>
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-indigo-600 mb-2.5">Technical Stack</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {cvData.skills.split(',').map((skill, index) => (
-                    <span key={index} className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-[11px] font-bold rounded">
-                      {skill.trim()}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ================= TEMPLATE 3: EDITORIAL CLASSIC ================= */}
-        {template === 'editorial' && (
-          <div className="w-[800px] min-h-[1056px] shrink-0 bg-white text-slate-900 p-12 shadow-2xl rounded font-serif">
-            <div className="text-center pb-6 mb-6 border-b border-slate-400">
-              <h1 className="text-2xl font-bold uppercase tracking-widest">{cvData.fullName}</h1>
-              <p className="text-sm italic text-slate-700 mt-1">{cvData.title}</p>
-              <div className="text-xs text-slate-600 mt-2 space-x-3 font-sans">
-                {cvData.email && <span>{cvData.email}</span>}
-                {cvData.phone && <span>| {cvData.phone}</span>}
-                {cvData.location && <span>| {cvData.location}</span>}
-              </div>
-            </div>
-
-            {cvData.summary && (
-              <div className="mb-6">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-1 font-sans">Profile Overview</h4>
-                <p className="text-xs text-slate-800 leading-relaxed">{cvData.summary}</p>
-              </div>
-            )}
-
-            {cvData.experiences.length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-2 font-sans">Career History</h4>
-                <div className="space-y-4">
-                  {cvData.experiences.map((exp, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between text-xs font-bold">
-                        <span>{exp.role}, {exp.company}</span>
-                        <span>{exp.duration}</span>
-                      </div>
-                      <p className="text-xs text-slate-800 mt-1 whitespace-pre-line leading-relaxed">{exp.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {cvData.educations.length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-2 font-sans">Academic Background</h4>
-                <div className="space-y-2">
-                  {cvData.educations.map((edu, i) => (
-                    <div key={i} className="flex justify-between text-xs">
-                      <span><strong>{edu.degree}</strong>, {edu.institution}</span>
-                      <span>{edu.duration}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {cvData.skills && (
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 mb-1 font-sans">Core Expertise</h4>
-                <p className="text-xs text-slate-800">{cvData.skills}</p>
-              </div>
-            )}
-          </div>
-        )}
+        </div>
 
       </div>
 

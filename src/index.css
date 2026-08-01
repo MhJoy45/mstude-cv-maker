@@ -1,34 +1,11 @@
 @import "tailwindcss";
 
-@media print {
+@layer base {
   body {
-    background-color: white !important;
-    color: black !important;
-  }
-  
-  .no-print {
-    display: none !important;
-  }
-
-  .print-only-full {
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: white !important;
-  }
-
-  div[class*="shadow-"] {
-    box-shadow: none !important;
-  }
-
-  div[class*="rounded"] {
-    border-radius: 0 !important;
+    @apply bg-slate-950 text-slate-100;
   }
 }
 
-/* Custom scrollbar for preview overflow on mobile */
 .cv-preview-scroll::-webkit-scrollbar {
   width: 6px;
   height: 6px;
