@@ -19,7 +19,6 @@
     background: white !important;
   }
 
-  /* Ensures clean page breaks and removes shadows/borders for pristine PDF printing */
   div[class*="shadow-"] {
     box-shadow: none !important;
   }
@@ -27,4 +26,14 @@
   div[class*="rounded"] {
     border-radius: 0 !important;
   }
+}
+
+/* Custom scrollbar for preview overflow on mobile */
+.cv-preview-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.cv-preview-scroll::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
 }
