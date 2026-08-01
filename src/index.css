@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only-full {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+
+  /* Ensures clean page breaks and removes shadows/borders for pristine PDF printing */
+  div[class*="shadow-"] {
+    box-shadow: none !important;
+  }
+
+  div[class*="rounded"] {
+    border-radius: 0 !important;
+  }
+}
