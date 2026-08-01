@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 const defaultCvData = {
-  fullName: 'Manirul Islam',
+  fullName: 'Your Name Here',
   title: 'Digital Operations & E-Commerce Specialist',
   email: 'manirul.islam@example.com',
   phone: '+880 1234 567890',
